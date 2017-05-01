@@ -1,0 +1,5 @@
+# status-site
+backup/
+node_modules/
+build/
+.DS_Store
