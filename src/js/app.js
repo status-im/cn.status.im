@@ -15,7 +15,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     s(r[o]);
   }return s;
 })({ 1: [function (require, module, exports) {
-    // https://d3js.org/d3-array/ Version 1.2.0. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-array/ Version 1.0.2. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : factory(global.d3 = global.d3 || {});
     })(this, function (exports) {
@@ -59,41 +59,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       var bisectRight = ascendingBisect.right;
       var bisectLeft = ascendingBisect.left;
 
-      var pairs = function pairs(array, f) {
-        if (f == null) f = pair;
-        var i = 0,
-            n = array.length - 1,
-            p = array[0],
-            pairs = new Array(n < 0 ? 0 : n);
-        while (i < n) {
-          pairs[i] = f(p, p = array[++i]);
-        }return pairs;
-      };
-
-      function pair(a, b) {
-        return [a, b];
-      }
-
-      var cross = function cross(values0, values1, reduce) {
-        var n0 = values0.length,
-            n1 = values1.length,
-            values = new Array(n0 * n1),
-            i0,
-            i1,
-            i,
-            value0;
-
-        if (reduce == null) reduce = pair;
-
-        for (i0 = i = 0; i0 < n0; ++i0) {
-          for (value0 = values0[i0], i1 = 0; i1 < n1; ++i1, ++i) {
-            values[i] = reduce(value0, values1[i1]);
-          }
-        }
-
-        return values;
-      };
-
       var descending = function descending(a, b) {
         return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
       };
@@ -102,34 +67,34 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return x === null ? NaN : +x;
       };
 
-      var variance = function variance(values, valueof) {
-        var n = values.length,
+      var variance = function variance(array, f) {
+        var n = array.length,
             m = 0,
+            a,
+            d,
+            s = 0,
             i = -1,
-            mean = 0,
-            value,
-            delta,
-            sum = 0;
+            j = 0;
 
-        if (valueof == null) {
+        if (f == null) {
           while (++i < n) {
-            if (!isNaN(value = number(values[i]))) {
-              delta = value - mean;
-              mean += delta / ++m;
-              sum += delta * (value - mean);
+            if (!isNaN(a = number(array[i]))) {
+              d = a - m;
+              m += d / ++j;
+              s += d * (a - m);
             }
           }
         } else {
           while (++i < n) {
-            if (!isNaN(value = number(valueof(values[i], i, values)))) {
-              delta = value - mean;
-              mean += delta / ++m;
-              sum += delta * (value - mean);
+            if (!isNaN(a = number(f(array[i], i, array)))) {
+              d = a - m;
+              m += d / ++j;
+              s += d * (a - m);
             }
           }
         }
 
-        if (m > 1) return sum / (m - 1);
+        if (j > 1) return s / (j - 1);
       };
 
       var deviation = function deviation(array, f) {
@@ -137,44 +102,38 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return v ? Math.sqrt(v) : v;
       };
 
-      var extent = function extent(values, valueof) {
-        var n = values.length,
-            i = -1,
-            value,
-            min,
-            max;
+      var extent = function extent(array, f) {
+        var i = -1,
+            n = array.length,
+            a,
+            b,
+            c;
 
-        if (valueof == null) {
+        if (f == null) {
           while (++i < n) {
-            // Find the first comparable value.
-            if ((value = values[i]) != null && value >= value) {
-              min = max = value;
-              while (++i < n) {
-                // Compare the remaining values.
-                if ((value = values[i]) != null) {
-                  if (min > value) min = value;
-                  if (max < value) max = value;
-                }
-              }
+            if ((b = array[i]) != null && b >= b) {
+              a = c = b;break;
+            }
+          }while (++i < n) {
+            if ((b = array[i]) != null) {
+              if (a > b) a = b;
+              if (c < b) c = b;
             }
           }
         } else {
           while (++i < n) {
-            // Find the first comparable value.
-            if ((value = valueof(values[i], i, values)) != null && value >= value) {
-              min = max = value;
-              while (++i < n) {
-                // Compare the remaining values.
-                if ((value = valueof(values[i], i, values)) != null) {
-                  if (min > value) min = value;
-                  if (max < value) max = value;
-                }
-              }
+            if ((b = f(array[i], i, array)) != null && b >= b) {
+              a = c = b;break;
+            }
+          }while (++i < n) {
+            if ((b = f(array[i], i, array)) != null) {
+              if (a > b) a = b;
+              if (c < b) c = b;
             }
           }
         }
 
-        return [min, max];
+        return [a, c];
       };
 
       var array = Array.prototype;
@@ -211,43 +170,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       var e2 = Math.sqrt(2);
 
       var ticks = function ticks(start, stop, count) {
-        var reverse = stop < start,
-            i = -1,
-            n,
-            ticks,
-            step;
-
-        if (reverse) n = start, start = stop, stop = n;
-
-        if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) return [];
-
-        if (step > 0) {
-          start = Math.ceil(start / step);
-          stop = Math.floor(stop / step);
-          ticks = new Array(n = Math.ceil(stop - start + 1));
-          while (++i < n) {
-            ticks[i] = (start + i) * step;
-          }
-        } else {
-          start = Math.floor(start * step);
-          stop = Math.ceil(stop * step);
-          ticks = new Array(n = Math.ceil(start - stop + 1));
-          while (++i < n) {
-            ticks[i] = (start - i) / step;
-          }
-        }
-
-        if (reverse) ticks.reverse();
-
-        return ticks;
+        var step = tickStep(start, stop, count);
+        return range(Math.ceil(start / step) * step, Math.floor(stop / step) * step + step / 2, // inclusive
+        step);
       };
-
-      function tickIncrement(start, stop, count) {
-        var step = (stop - start) / Math.max(0, count),
-            power = Math.floor(Math.log(step) / Math.LN10),
-            error = step / Math.pow(10, power);
-        return power >= 0 ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power) : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
-      }
 
       function tickStep(start, stop, count) {
         var step0 = Math.abs(stop - start) / Math.max(0, count),
@@ -282,16 +208,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
               tz = threshold(values, x0, x1);
 
           // Convert number of thresholds into uniform thresholds.
-          if (!Array.isArray(tz)) {
-            tz = tickStep(x0, x1, tz);
-            tz = range(Math.ceil(x0 / tz) * tz, Math.floor(x1 / tz) * tz, tz); // exclusive
-          }
+          if (!Array.isArray(tz)) tz = ticks(x0, x1, tz);
 
           // Remove any thresholds outside the domain.
           var m = tz.length;
           while (tz[0] <= x0) {
             tz.shift(), --m;
-          }while (tz[m - 1] > x1) {
+          }while (tz[m - 1] >= x1) {
             tz.pop(), --m;
           }var bins = new Array(m + 1),
               bin;
@@ -329,17 +252,17 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return histogram;
       };
 
-      var quantile = function quantile(values, p, valueof) {
-        if (valueof == null) valueof = number;
-        if (!(n = values.length)) return;
-        if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
-        if (p >= 1) return +valueof(values[n - 1], n - 1, values);
+      var quantile = function quantile(array, p, f) {
+        if (f == null) f = number;
+        if (!(n = array.length)) return;
+        if ((p = +p) <= 0 || n < 2) return +f(array[0], 0, array);
+        if (p >= 1) return +f(array[n - 1], n - 1, array);
         var n,
-            i = (n - 1) * p,
-            i0 = Math.floor(i),
-            value0 = +valueof(values[i0], i0, values),
-            value1 = +valueof(values[i0 + 1], i0 + 1, values);
-        return value0 + (value1 - value0) * (i - i0);
+            h = (n - 1) * p,
+            i = Math.floor(h),
+            a = +f(array[i], i, array),
+            b = +f(array[i + 1], i + 1, array);
+        return a + (b - a) * (h - i);
       };
 
       var freedmanDiaconis = function freedmanDiaconis(values, min, max) {
@@ -351,80 +274,66 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return Math.ceil((max - min) / (3.5 * deviation(values) * Math.pow(values.length, -1 / 3)));
       };
 
-      var max = function max(values, valueof) {
-        var n = values.length,
-            i = -1,
-            value,
-            max;
+      var max = function max(array, f) {
+        var i = -1,
+            n = array.length,
+            a,
+            b;
 
-        if (valueof == null) {
+        if (f == null) {
           while (++i < n) {
-            // Find the first comparable value.
-            if ((value = values[i]) != null && value >= value) {
-              max = value;
-              while (++i < n) {
-                // Compare the remaining values.
-                if ((value = values[i]) != null && value > max) {
-                  max = value;
-                }
-              }
+            if ((b = array[i]) != null && b >= b) {
+              a = b;break;
             }
+          }while (++i < n) {
+            if ((b = array[i]) != null && b > a) a = b;
           }
         } else {
           while (++i < n) {
-            // Find the first comparable value.
-            if ((value = valueof(values[i], i, values)) != null && value >= value) {
-              max = value;
-              while (++i < n) {
-                // Compare the remaining values.
-                if ((value = valueof(values[i], i, values)) != null && value > max) {
-                  max = value;
-                }
-              }
+            if ((b = f(array[i], i, array)) != null && b >= b) {
+              a = b;break;
             }
+          }while (++i < n) {
+            if ((b = f(array[i], i, array)) != null && b > a) a = b;
           }
         }
 
-        return max;
+        return a;
       };
 
-      var mean = function mean(values, valueof) {
-        var n = values.length,
-            m = n,
+      var mean = function mean(array, f) {
+        var s = 0,
+            n = array.length,
+            a,
             i = -1,
-            value,
-            sum = 0;
+            j = n;
 
-        if (valueof == null) {
+        if (f == null) {
           while (++i < n) {
-            if (!isNaN(value = number(values[i]))) sum += value;else --m;
+            if (!isNaN(a = number(array[i]))) s += a;else --j;
           }
         } else {
           while (++i < n) {
-            if (!isNaN(value = number(valueof(values[i], i, values)))) sum += value;else --m;
+            if (!isNaN(a = number(f(array[i], i, array)))) s += a;else --j;
           }
         }
 
-        if (m) return sum / m;
+        if (j) return s / j;
       };
 
-      var median = function median(values, valueof) {
-        var n = values.length,
-            i = -1,
-            value,
-            numbers = [];
+      var median = function median(array, f) {
+        var numbers = [],
+            n = array.length,
+            a,
+            i = -1;
 
-        if (valueof == null) {
+        if (f == null) {
           while (++i < n) {
-            if (!isNaN(value = number(values[i]))) {
-              numbers.push(value);
-            }
+            if (!isNaN(a = number(array[i]))) numbers.push(a);
           }
         } else {
           while (++i < n) {
-            if (!isNaN(value = number(valueof(values[i], i, values)))) {
-              numbers.push(value);
-            }
+            if (!isNaN(a = number(f(array[i], i, array)))) numbers.push(a);
           }
         }
 
@@ -454,41 +363,41 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return merged;
       };
 
-      var min = function min(values, valueof) {
-        var n = values.length,
-            i = -1,
-            value,
-            min;
+      var min = function min(array, f) {
+        var i = -1,
+            n = array.length,
+            a,
+            b;
 
-        if (valueof == null) {
+        if (f == null) {
           while (++i < n) {
-            // Find the first comparable value.
-            if ((value = values[i]) != null && value >= value) {
-              min = value;
-              while (++i < n) {
-                // Compare the remaining values.
-                if ((value = values[i]) != null && min > value) {
-                  min = value;
-                }
-              }
+            if ((b = array[i]) != null && b >= b) {
+              a = b;break;
             }
+          }while (++i < n) {
+            if ((b = array[i]) != null && a > b) a = b;
           }
         } else {
           while (++i < n) {
-            // Find the first comparable value.
-            if ((value = valueof(values[i], i, values)) != null && value >= value) {
-              min = value;
-              while (++i < n) {
-                // Compare the remaining values.
-                if ((value = valueof(values[i], i, values)) != null && min > value) {
-                  min = value;
-                }
-              }
+            if ((b = f(array[i], i, array)) != null && b >= b) {
+              a = b;break;
             }
+          }while (++i < n) {
+            if ((b = f(array[i], i, array)) != null && a > b) a = b;
           }
         }
 
-        return min;
+        return a;
+      };
+
+      var pairs = function pairs(array) {
+        var i = 0,
+            n = array.length - 1,
+            p = array[0],
+            pairs = new Array(n < 0 ? 0 : n);
+        while (i < n) {
+          pairs[i] = [p, p = array[++i]];
+        }return pairs;
       };
 
       var permute = function permute(array, indexes) {
@@ -499,23 +408,19 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }return permutes;
       };
 
-      var scan = function scan(values, compare) {
-        if (!(n = values.length)) return;
-        var n,
-            i = 0,
+      var scan = function scan(array, compare) {
+        if (!(n = array.length)) return;
+        var i = 0,
+            n,
             j = 0,
             xi,
-            xj = values[j];
+            xj = array[j];
 
-        if (compare == null) compare = ascending;
+        if (!compare) compare = ascending;
 
         while (++i < n) {
-          if (compare(xi = values[i], xj) < 0 || compare(xj, xj) !== 0) {
-            xj = xi, j = i;
-          }
-        }
-
-        if (compare(xj, xj) === 0) return j;
+          if (compare(xi = array[i], xj) < 0 || compare(xj, xj) !== 0) xj = xi, j = i;
+        }if (compare(xj, xj) === 0) return j;
       };
 
       var shuffle = function shuffle(array, i0, i1) {
@@ -533,23 +438,23 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return array;
       };
 
-      var sum = function sum(values, valueof) {
-        var n = values.length,
-            i = -1,
-            value,
-            sum = 0;
+      var sum = function sum(array, f) {
+        var s = 0,
+            n = array.length,
+            a,
+            i = -1;
 
-        if (valueof == null) {
+        if (f == null) {
           while (++i < n) {
-            if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
-          }
+            if (a = +array[i]) s += a;
+          } // Note: zero and null are equivalent.
         } else {
           while (++i < n) {
-            if (value = +valueof(values[i], i, values)) sum += value;
+            if (a = +f(array[i], i, array)) s += a;
           }
         }
 
-        return sum;
+        return s;
       };
 
       var transpose = function transpose(matrix) {
@@ -575,7 +480,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       exports.bisectLeft = bisectLeft;
       exports.ascending = ascending;
       exports.bisector = bisector;
-      exports.cross = cross;
       exports.descending = descending;
       exports.deviation = deviation;
       exports.extent = extent;
@@ -596,7 +500,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       exports.shuffle = shuffle;
       exports.sum = sum;
       exports.ticks = ticks;
-      exports.tickIncrement = tickIncrement;
       exports.tickStep = tickStep;
       exports.transpose = transpose;
       exports.variance = variance;
@@ -605,7 +508,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, {}], 2: [function (require, module, exports) {
-    // https://d3js.org/d3-collection/ Version 1.0.3. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-collection/ Version 1.0.2. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : factory(global.d3 = global.d3 || {});
     })(this, function (exports) {
@@ -859,7 +762,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, {}], 3: [function (require, module, exports) {
-    // https://d3js.org/d3-color/ Version 1.0.3. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-color/ Version 1.0.2. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : factory(global.d3 = global.d3 || {});
     })(this, function (exports) {
@@ -1351,7 +1254,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, {}], 4: [function (require, module, exports) {
-    // https://d3js.org/d3-ease/ Version 1.0.3. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-ease/ Version 1.0.2. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : factory(global.d3 = global.d3 || {});
     })(this, function (exports) {
@@ -1619,7 +1522,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, {}], 5: [function (require, module, exports) {
-    // https://d3js.org/d3-format/ Version 1.2.0. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-format/ Version 1.0.2. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : factory(global.d3 = global.d3 || {});
     })(this, function (exports) {
@@ -1629,7 +1532,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       // significant digits p, where x is positive and p is in [1, 21] or undefined.
       // For example, formatDecimal(1.23) returns ["123", 0].
 
-      var formatDecimal = function formatDecimal(x, p) {
+      function formatDecimal(x, p) {
         if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
         var i,
             coefficient = x.slice(0, i);
@@ -1637,13 +1540,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
         // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
         return [coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient, +x.slice(i + 1)];
-      };
+      }
 
-      var exponent = function exponent(x) {
+      function exponent(x) {
         return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
-      };
+      }
 
-      var formatGroup = function formatGroup(grouping, thousands) {
+      function formatGroup(grouping, thousands) {
         return function (value, width) {
           var i = value.length,
               t = [],
@@ -1660,17 +1563,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
           return t.reverse().join(thousands);
         };
-      };
+      }
 
-      var formatNumerals = function formatNumerals(numerals) {
-        return function (value) {
-          return value.replace(/[0-9]/g, function (i) {
-            return numerals[+i];
-          });
-        };
-      };
-
-      var formatDefault = function formatDefault(x, p) {
+      function formatDefault(x, p) {
         x = x.toPrecision(p);
 
         out: for (var n = x.length, i = 1, i0 = -1, i1; i < n; ++i) {
@@ -1687,11 +1582,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
 
         return i0 > 0 ? x.slice(0, i0) + x.slice(i1 + 1) : x;
-      };
+      }
 
       var prefixExponent;
 
-      var formatPrefixAuto = function formatPrefixAuto(x, p) {
+      function formatPrefixAuto(x, p) {
         var d = formatDecimal(x, p);
         if (!d) return x + "";
         var coefficient = d[0],
@@ -1699,15 +1594,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
             n = coefficient.length;
         return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
-      };
+      }
 
-      var formatRounded = function formatRounded(x, p) {
+      function formatRounded(x, p) {
         var d = formatDecimal(x, p);
         if (!d) return x + "";
         var coefficient = d[0],
             exponent = d[1];
         return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
-      };
+      }
 
       var formatTypes = {
         "": formatDefault,
@@ -1755,8 +1650,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return new FormatSpecifier(specifier);
       }
 
-      formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
-
       function FormatSpecifier(specifier) {
         if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
 
@@ -1795,18 +1688,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width == null ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0)) + this.type;
       };
 
-      var identity = function identity(x) {
-        return x;
-      };
-
       var prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
 
-      var formatLocale = function formatLocale(locale) {
+      function identity(x) {
+        return x;
+      }
+
+      function formatLocale(locale) {
         var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity,
             currency = locale.currency,
-            decimal = locale.decimal,
-            numerals = locale.numerals ? formatNumerals(locale.numerals) : identity,
-            percent = locale.percent || "%";
+            decimal = locale.decimal;
 
         function newFormat(specifier) {
           specifier = formatSpecifier(specifier);
@@ -1824,7 +1715,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           // Compute the prefix and suffix.
           // For SI-prefix, the suffix is lazily computed.
           var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-              suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+              suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
 
           // What format function should we use?
           // Is this an integer type?
@@ -1851,12 +1742,25 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             } else {
               value = +value;
 
-              // Perform the initial formatting.
-              var valueNegative = value < 0;
-              value = formatType(Math.abs(value), precision);
+              // Convert negative to positive, and compute the prefix.
+              // Note that -0 is not less than 0, but 1 / -0 is!
+              var valueNegative = (value < 0 || 1 / value < 0) && (value *= -1, true);
 
-              // If a negative value rounds to zero during formatting, treat as positive.
-              if (valueNegative && +value === 0) valueNegative = false;
+              // Perform the initial formatting.
+              value = formatType(value, precision);
+
+              // If the original value was negative, it may be rounded to zero during
+              // formatting; treat this as (positive) zero.
+              if (valueNegative) {
+                i = -1, n = value.length;
+                valueNegative = false;
+                while (++i < n) {
+                  if (c = value.charCodeAt(i), 48 < c && c < 58 || type === "x" && 96 < c && c < 103 || type === "X" && 64 < c && c < 71) {
+                    valueNegative = true;
+                    break;
+                  }
+                }
+              }
 
               // Compute the prefix and suffix.
               valuePrefix = (valueNegative ? sign === "(" ? sign : "-" : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
@@ -1889,16 +1793,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             // Reconstruct the final output based on the desired alignment.
             switch (align) {
               case "<":
-                value = valuePrefix + value + valueSuffix + padding;break;
+                return valuePrefix + value + valueSuffix + padding;
               case "=":
-                value = valuePrefix + padding + value + valueSuffix;break;
+                return valuePrefix + padding + value + valueSuffix;
               case "^":
-                value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);break;
-              default:
-                value = padding + valuePrefix + value + valueSuffix;break;
+                return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
             }
-
-            return numerals(value);
+            return padding + valuePrefix + value + valueSuffix;
           }
 
           format.toString = function () {
@@ -1922,10 +1823,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           format: newFormat,
           formatPrefix: formatPrefix
         };
-      };
+      }
 
       var locale;
-
       defaultLocale({
         decimal: ".",
         thousands: ",",
@@ -1940,18 +1840,18 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         return locale;
       }
 
-      var precisionFixed = function precisionFixed(step) {
+      function precisionFixed(step) {
         return Math.max(0, -exponent(Math.abs(step)));
-      };
+      }
 
-      var precisionPrefix = function precisionPrefix(step, value) {
+      function precisionPrefix(step, value) {
         return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3 - exponent(Math.abs(step)));
-      };
+      }
 
-      var precisionRound = function precisionRound(step, max) {
+      function precisionRound(step, max) {
         step = Math.abs(step), max = Math.abs(max) - step;
         return Math.max(0, exponent(max) - exponent(step)) + 1;
-      };
+      }
 
       exports.formatDefaultLocale = defaultLocale;
       exports.formatLocale = formatLocale;
@@ -1963,7 +1863,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, {}], 6: [function (require, module, exports) {
-    // https://d3js.org/d3-interpolate/ Version 1.1.4. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-interpolate/ Version 1.1.3. Copyright 2017 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color')) : typeof define === 'function' && define.amd ? define(['exports', 'd3-color'], factory) : factory(global.d3 = global.d3 || {}, global.d3);
     })(this, function (exports, d3Color) {
@@ -2510,7 +2410,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, { "d3-color": 3 }], 7: [function (require, module, exports) {
-    // https://d3js.org/d3-scale/ Version 1.0.5. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-scale/ Version 1.0.4. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate'), require('d3-format'), require('d3-time'), require('d3-time-format'), require('d3-color')) : typeof define === 'function' && define.amd ? define(['exports', 'd3-array', 'd3-collection', 'd3-interpolate', 'd3-format', 'd3-time', 'd3-time-format', 'd3-color'], factory) : factory(global.d3 = global.d3 || {}, global.d3, global.d3, global.d3, global.d3, global.d3, global.d3, global.d3);
     })(this, function (exports, d3Array, d3Collection, d3Interpolate, d3Format, d3Time, d3TimeFormat, d3Color) {
@@ -3391,7 +3291,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, { "d3-array": 1, "d3-collection": 2, "d3-color": 3, "d3-format": 5, "d3-interpolate": 6, "d3-time": 9, "d3-time-format": 8 }], 8: [function (require, module, exports) {
-    // https://d3js.org/d3-time-format/ Version 2.0.5. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-time-format/ Version 2.0.3. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-time')) : typeof define === 'function' && define.amd ? define(['exports', 'd3-time'], factory) : factory(global.d3 = global.d3 || {}, global.d3);
     })(this, function (exports, d3Time) {
@@ -3978,7 +3878,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       Object.defineProperty(exports, '__esModule', { value: true });
     });
   }, { "d3-time": 9 }], 9: [function (require, module, exports) {
-    // https://d3js.org/d3-time/ Version 1.0.6. Copyright 2017 Mike Bostock.
+    // https://d3js.org/d3-time/ Version 1.0.4. Copyright 2016 Mike Bostock.
     (function (global, factory) {
       (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : factory(global.d3 = global.d3 || {});
     })(this, function (exports) {
