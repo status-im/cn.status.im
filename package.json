@@ -36,6 +36,7 @@
     "d3-interpolate": "^1.2.0",
     "d3-scale": "^1.0.7",
     "gulp-file-include": "^1.0.0",
+    "gulp-htmlmin": "^4.0.0",
     "ip": "^1.1.5",
     "js-cookie": "^2.1.4",
     "lodash.assign": "^4.2.0",
