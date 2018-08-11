@@ -19,14 +19,13 @@ var htmlmin      = require('gulp-htmlmin')
 
 var imagemin     = require('gulp-imagemin')
 
-gulp.task('js', function () {
+gulp.task('js', () => {
   return gulp.src('src/js/**/*.js', {read: false})
     .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(tap(function (file) {
-      //gutil.log('bundling ' + file.path)
-      file.contents = browserify(file.path, {debug: true}).bundle()
+    .pipe(tap((f) => {
+      f.contents = browserify(f.path, {debug: true}).bundle()
     }))
-    .pipe(streamify(babel({ presets: ['es2015', 'es2017'] })))
+    .pipe(streamify(babel({presets: ['es2015', 'es2017']})))
     .pipe(buffer())
     .pipe(uglify())
     .pipe(sourcemaps.write('./'))
@@ -34,19 +33,19 @@ gulp.task('js', function () {
     .pipe(browserSync.stream())
 })
 
-gulp.task('fonts', function() {
+gulp.task('fonts', () => {
   return gulp.src(['src/fonts**/*'])
     .pipe(gulp.dest('dist'))
 })
 
-gulp.task('html', function() {
+gulp.task('html', () => {
   return gulp.src(['src/**/*.html'])
     .pipe(htmlmin({collapseWhitespace: true, minifyJS: true}))
     .pipe(rename(p => p.dirname = p.dirname.slice(5)))
     .pipe(gulp.dest('dist'))
 })
 
-gulp.task('css', function() {
+gulp.task('css', () => {
   return gulp.src("src/scss/main.scss")
     .pipe(sass())
     .on('error', gutil.log)
@@ -55,17 +54,17 @@ gulp.task('css', function() {
     .pipe(browserSync.stream())
 })
 
-gulp.task('images', function() {
+gulp.task('images', () => {
   gulp.src('src/img/**/*')
     .pipe(imagemin())
     .pipe(gulp.dest('dist/img'))
 })
 
-gulp.task('clean', function() {
+gulp.task('clean', () => {
   del.sync('dist/*')
 })
 
-gulp.task('develop', ['build'], function() {
+gulp.task('develop', ['build'], () => {
     browserSync.init({server: "./dist"})
 
     gulp.watch("src/scss/*.scss", ['css'])
