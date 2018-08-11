@@ -1,21 +1,21 @@
-var gulp         = require('gulp');
-var browserSync  = require('browser-sync').create();
-var sass         = require('gulp-sass');
-var autoprefixer = require('gulp-autoprefixer');
+var gulp         = require('gulp')
+var browserSync  = require('browser-sync').create()
+var sass         = require('gulp-sass')
+var autoprefixer = require('gulp-autoprefixer')
 
-var browserify   = require('browserify');
-var source       = require('vinyl-source-stream');
-var streamify    = require('gulp-streamify');
-var babel        = require('gulp-babel');
-var tap          = require('gulp-tap');
-var buffer       = require('gulp-buffer');
-var sourcemaps   = require('gulp-sourcemaps');
+var browserify   = require('browserify')
+var source       = require('vinyl-source-stream')
+var streamify    = require('gulp-streamify')
+var babel        = require('gulp-babel')
+var tap          = require('gulp-tap')
+var buffer       = require('gulp-buffer')
+var sourcemaps   = require('gulp-sourcemaps')
 
-var del          = require('del');
-var gutil        = require('gulp-util');
-var uglify       = require('gulp-uglify');
+var del          = require('del')
+var gutil        = require('gulp-util')
+var uglify       = require('gulp-uglify')
 
-var imagemin     = require('gulp-imagemin');
+var imagemin     = require('gulp-imagemin')
 
 gulp.task('js', function () {
   return gulp.src('src/**/*.js', {read: false})
@@ -29,7 +29,12 @@ gulp.task('js', function () {
     .pipe(uglify())
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('dist'))
-    .pipe(browserSync.stream());
+    .pipe(browserSync.stream())
+})
+
+gulp.task('html', function() {
+  return gulp.src(['src/**/*.html'])
+    .pipe(gulp.dest('dist'))
 })
 
 gulp.task('sass', function() {
@@ -38,7 +43,7 @@ gulp.task('sass', function() {
     .on('error', gutil.log)
     .pipe(autoprefixer({ browsers: ['last 3 versions'], cascade: false }))
     .pipe(gulp.dest("dist/css"))
-    .pipe(browserSync.stream());
+    .pipe(browserSync.stream())
 })
 
 gulp.task('imagemin', function() {
@@ -47,18 +52,18 @@ gulp.task('imagemin', function() {
     .pipe(gulp.dest('dist/img'))
 })
 
-gulp.task('cleanUp', function() {
+gulp.task('clean', function() {
   del.sync('dist/*')
 })
 
-gulp.task('serve', ['build'], function() {
+gulp.task('develop', ['build'], function() {
     browserSync.init({server: "./"})
 
-    gulp.watch("src/scss/*.scss", ['sass']);
-    gulp.watch("src/js/*.js", ['js']);
-    gulp.watch("src/img/**/*", ['imagemin']);
-    gulp.watch("./*.html").on('change', browserSync.reload);
+    gulp.watch("src/scss/*.scss", ['sass'])
+    gulp.watch("src/js/*.js", ['js'])
+    gulp.watch("src/img/**/*", ['imagemin'])
+    gulp.watch("./*.html").on('change', browserSync.reload)
 })
 
-gulp.task('build',   ['cleanUp', 'sass', 'imagemin', 'js']);
-gulp.task('default', ['serve']);
+gulp.task('build',   ['clean', 'sass', 'imagemin', 'js'])
+gulp.task('default', ['develop'])
