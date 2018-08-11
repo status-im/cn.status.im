@@ -2,6 +2,12 @@
   "name": "cn.status.im",
   "version": "1.0.0",
   "description": "Status main chinese page",
+  "scripts": {
+      "gulp": "gulp",
+      "clean": "gulp clean",
+      "build": "gulp build",
+      "develop": "gulp develop"
+  },
   "devDependencies": {
     "babel": "^6.23.0",
     "babel-preset-es2015": "^6.24.1",

@@ -22,7 +22,7 @@ var imagemin     = require('gulp-imagemin')
 gulp.task('js', () => {
   return gulp.src('src/js/**/*.js', {read: false})
     .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(tap((f) => {
+    .pipe(tap(f => {
       f.contents = browserify(f.path, {debug: true}).bundle()
     }))
     .pipe(streamify(babel({presets: ['es2015', 'es2017']})))
@@ -55,7 +55,7 @@ gulp.task('css', () => {
 })
 
 gulp.task('images', () => {
-  gulp.src('src/img/**/*')
+  return gulp.src('src/img/**/*')
     .pipe(imagemin())
     .pipe(gulp.dest('dist/img'))
 })
