@@ -1,23 +1,22 @@
-var gulp         = require('gulp')
-var browserSync  = require('browser-sync').create()
-var sass         = require('gulp-sass')
-var autoprefixer = require('gulp-autoprefixer')
+import gulp from 'gulp'
+import browserSync from 'browser-sync'
+import sass from 'gulp-sass'
+import autoprefixer from 'gulp-autoprefixer'
 
-var browserify   = require('browserify')
-var source       = require('vinyl-source-stream')
-var streamify    = require('gulp-streamify')
-var babel        = require('gulp-babel')
-var tap          = require('gulp-tap')
-var buffer       = require('gulp-buffer')
-var sourcemaps   = require('gulp-sourcemaps')
+import browserify from 'browserify'
+import source from 'vinyl-source-stream'
+import streamify from 'gulp-streamify'
+import babel from 'gulp-babel'
+import tap from 'gulp-tap'
+import buffer from 'gulp-buffer'
+import sourcemaps from 'gulp-sourcemaps'
 
-var del          = require('del')
-var gutil        = require('gulp-util')
-var rename       = require('gulp-rename')
-var uglify       = require('gulp-uglify')
-var htmlmin      = require('gulp-htmlmin')
-
-var imagemin     = require('gulp-imagemin')
+import del from 'del'
+import gutil from 'gulp-util'
+import rename from 'gulp-rename'
+import uglify from 'gulp-uglify'
+import htmlmin from 'gulp-htmlmin'
+import imagemin from 'gulp-imagemin'
 
 gulp.task('js', () => {
   return gulp.src('src/js/**/*.js', {read: false})
@@ -25,7 +24,7 @@ gulp.task('js', () => {
     .pipe(tap(f => {
       f.contents = browserify(f.path, {debug: true}).bundle()
     }))
-    .pipe(streamify(babel({presets: ['es2015', 'es2017']})))
+    .pipe(streamify(babel({presets: ['env']})))
     .pipe(buffer())
     .pipe(uglify())
     .pipe(sourcemaps.write('./'))
