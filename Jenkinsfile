@@ -1,3 +1,12 @@
+properties([
+  parameters([
+    string(
+      name: 'APK_URL',
+      description: 'URL for the Android mobile app release.'
+    )
+  ])
+])
+
 def website_host = 'node-01.ac-cn-hongkong-c.web.misc.statusim.net'
 
 node('linux') {
@@ -14,6 +23,7 @@ node('linux') {
   }
 
   stage('Build') {
+    env.APK_URL = params.APK_URL
     sh 'npm run build'
   }
 
