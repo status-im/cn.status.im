@@ -40,11 +40,7 @@
   },
   "dependencies": {
     "build-url": "^1.1.2",
-<<<<<<< HEAD
-    "d3-ease": "^1.0.2",
-=======
     "d3-ease": "^1.0.3",
->>>>>>> master
     "d3-interpolate": "^1.2.0",
     "d3-scale": "^1.0.7",
     "ip": "^1.1.5",
