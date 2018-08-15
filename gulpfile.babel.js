@@ -21,7 +21,7 @@ import imagemin from 'gulp-imagemin'
 
 /* HTML template parameters */
 const apk_url = (
-  process.env.NODE_ENV || 
+  process.env.APK_URL || 
   'http://artifacts.status.im:8081/artifactory/nightlies-local/im.status.ethereum-14a369-rel.apk'
 )
 
