@@ -32,6 +32,7 @@
     "gulp-static-hash": "^0.1.4",
     "gulp-streamify": "^1.0.2",
     "gulp-tap": "^1.0.1",
+    "gulp-template": "^5.0.0",
     "gulp-uglify": "^1.5.3",
     "gulp-useref": "^3.1.5",
     "gulp-util": "^3.0.7",
