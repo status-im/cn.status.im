@@ -16,7 +16,14 @@ import gutil from 'gulp-util'
 import rename from 'gulp-rename'
 import uglify from 'gulp-uglify'
 import htmlmin from 'gulp-htmlmin'
+import template from 'gulp-template'
 import imagemin from 'gulp-imagemin'
+
+/* HTML template parameters */
+const apk_url = (
+  process.env.NODE_ENV || 
+  'http://artifacts.status.im:8081/artifactory/nightlies-local/im.status.ethereum-14a369-rel.apk'
+)
 
 gulp.task('js', () => {
   return gulp.src('src/js/**/*.js', {read: false})
@@ -40,6 +47,7 @@ gulp.task('fonts', () => {
 gulp.task('html', () => {
   return gulp.src(['src/**/*.html'])
     .pipe(htmlmin({collapseWhitespace: true, minifyJS: true}))
+    .pipe(template({apk_url}))
     .pipe(rename(p => p.dirname = p.dirname.slice(5)))
     .pipe(gulp.dest('dist'))
 })
