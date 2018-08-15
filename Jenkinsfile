@@ -24,6 +24,7 @@ node('linux') {
 
   stage('Build') {
     env.APK_URL = params.APK_URL
+    sh 'npm run clean'
     sh 'npm run build'
     sh 'du -hsc dist/*'
   }
