@@ -22,7 +22,7 @@ import imagemin from 'gulp-imagemin'
 /* HTML template parameters */
 const apk_url = (
   process.env.APK_URL || 
-  'http://artifacts.status.im:8081/artifactory/nightlies-local/im.status.ethereum-14a369-rel.apk'
+  'https://status-im.ams3.digitaloceanspaces.com/StatusIm-190305-152317-ff3c9d-release.apk'
 )
 
 gulp.task('js', () => {
